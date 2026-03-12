@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Staff Directory</title>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+margin:40px;
+background:#f7f9f8;
+}
+
+h1{
+margin-bottom:20px;
+}
+
+.email-icon{
+display:inline-block;
+margin-top:6px;
+font-size:18px;
+text-decoration:none;
+color:#7ea2ad;
+}
+
+.email-icon:hover{
+color:#4c6d77;
+}
+
+#searchBar{
+padding:10px;
+width:300px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+.filters{
+margin-top:20px;
+}
+
+.filters button{
+padding:8px 16px;
+border:none;
+border-radius:20px;
+margin-right:10px;
+background:#e6ece9;
+cursor:pointer;
+}
+
+.filters button.active{
+background:#7ea2ad;
+color:white;
+}
+
+.staff-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,220px);
+gap:25px;
+margin-top:30px;
+}
+
+.staff-card{
+background:white;
+padding:20px;
+border-radius:12px;
+text-align:center;
+cursor:pointer;
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+transition:.2s;
+}
+
+.staff-card h3{
+margin:6px 0 2px 0;
+}
+
+.staff-card p{
+margin:0;
+}
+
+.staff-card:hover{
+transform:translateY(-5px);
+}
+
+.staff-card img{
+width:100px;
+height:100px;
+border-radius:50%;
+object-fit:cover;
+margin-bottom:10px;
+}
+
+.modal{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.45);
+display:none;
+align-items:center;
+justify-content:center;
+}
+
+.modal.open{
+display:flex;
+}
+
+.modal-card{
+background:white;
+border-radius:12px;
+width:600px;
+overflow:hidden;
+padding:0;
+position:relative;
+}
+
+#closeModal{
+position:absolute;
+right:20px;
+top:16px;
+font-size:22px;
+cursor:pointer;
+opacity:.8;
+z-index:5;
+}
+
+#closeModal:hover{
+opacity:1;
+}
+
+.modal-avatar-wrapper{
+text-align:center;
+}
+
+.modal-avatar{
+width:110px;
+height:110px;
+border-radius:50%;
+object-fit:cover;
+border:6px solid white;
+background:white;
+position:absolute;
+left:34px;
+bottom:-52px;
+box-shadow:0 6px 18px rgba(0,0,0,.15);
+}
+
+.modal-header{
+background:#7ea2ad;
+color:white;
+padding:14px 30px 14px 175px;
+position:relative;
+display:flex;
+align-items:center;
+min-height:56px;
+}
+
+.modal-header-text{
+line-height:1.1;
+display:flex;
+flex-direction:column;
+align-items:flex-start;
+}
+
+.modal-header-text h2{
+margin:0;
+font-size:20px;
+font-weight:700;
+}
+
+.modal-header-text p{
+margin:4px 0 0 0;
+font-size:14px;
+width:100%;
+text-align:center;
+}
+
+.modal-body{
+padding:58px 0 34px 0;
+display:flex;
+justify-content:center;
+}
+
+.modal-body-inner{
+width:395px;
+margin:0 auto;
+}
+
+.modal-body-header{
+display:grid;
+grid-template-columns:185px 185px;
+column-gap:25px;
+align-items:start;
+width:395px;
+margin:0 0 12px 0;
+}
+
+.modal-body-header h3{
+margin:0;
+font-size:15px;
+color:#555;
+font-weight:700;
+text-align:left;
+line-height:1.2;
+}
+
+#adminRow{
+display:none;
+width:185px;
+text-align:left;
+}
+
+#adminRow label{
+display:flex;
+align-items:center;
+gap:5px;
+font-size:12px;
+color:#777;
+margin-bottom:4px;
+white-space:nowrap;
+line-height:1.2;
+}
+
+#adminRow p{
+margin:0;
+font-size:13px;
+text-align:left;
+line-height:1.25;
+white-space:normal;
+}
+
+.modal-grid{
+display:grid;
+grid-template-columns:185px 185px;
+column-gap:25px;
+row-gap:20px;
+width:395px;
+margin-top:0;
+}
+
+.modal-grid > div{
+text-align:left;
+}
+
+.modal-grid label{
+display:flex;
+align-items:center;
+gap:5px;
+font-size:12px;
+color:#777;
+margin-bottom:4px;
+white-space:nowrap;
+line-height:1.2;
+}
+
+.modal-grid p{
+margin:0;
+font-size:13px;
+text-align:left;
+line-height:1.25;
+white-space:normal;
+}
+
+.modal-email{
+color:#2a6db3;
+text-decoration:underline;
+display:inline-block;
+margin:0;
+font-size:13px;
+line-height:1.25;
+word-break:break-word;
+}
+
+.modal-email:hover{
+color:#1f5590;
+}
+
+.modal-grid label{
+display:flex;
+align-items:center;
+gap:6px;
+font-size:13px;
+color:#777;
+margin-bottom:4px;
+white-space:nowrap;
+}
+
+.modal-grid p{
+margin:0;
+font-size:15px;
+text-align:left;
+white-space:nowrap;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Staff Directory</h1>
+
+<input id="searchBar" placeholder="Search by name, title, or department">
+
+<div id="departmentFilters" class="filters"></div>
+
+<div id="staffGrid" class="staff-grid"></div>
+
+<div id="staffModal" class="modal">
+  <div class="modal-card">
+
+    <div class="modal-header">
+      <span id="closeModal">✕</span>
+
+      <div class="modal-avatar-wrapper">
+        <img id="modalImage" class="modal-avatar">
+      </div>
+
+      <div class="modal-header-text">
+        <h2 id="modalName"></h2>
+        <p id="modalTitle"></p>
+      </div>
+    </div>
+
+<div class="modal-body">
+  <div class="modal-body-inner">
+
+    <div class="modal-body-header">
+      <h3>Contact Information</h3>
+
+      <div id="adminRow">
+        <label>☎ Admin</label>
+        <p id="modalAdmin"></p>
+      </div>
+    </div>
+
+    <div class="modal-grid">
+      <div>
+        <label>✉︎ Email</label>
+        <a id="modalEmail" class="modal-email"></a>
+      </div>
+
+      <div>
+        <label>🕻 Phone</label>
+        <p id="modalPhone"></p>
+      </div>
+
+      <div>
+        <label>⚲ Location</label>
+        <p id="modalLocation"></p>
+      </div>
+
+      <div>
+        <label>🛈 Department</label>
+        <p id="modalDepartment"></p>
+      </div>
+    </div>
+
+  </div>
+</div>
+  </div>
+</div>
+
+<script>
+
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTM4KhWC4poh76w1aJVkX-j3yJ8yq7baJ-ZhDbE07fI-XwseZI8tohvjEUVLNyYJeiC8IMiX0SqZ8gT/pub?output=csv";
+
+let staffData = [];
+
+const grid = document.getElementById("staffGrid");
+const filters = document.getElementById("departmentFilters");
+const search = document.getElementById("searchBar");
+
+fetch(sheetURL)
+.then(res => res.text())
+.then(data => {
+
+const rows = data.split("\n").slice(1);
+
+staffData = rows.map(row => {
+
+const cols = row.split(",");
+
+return {
+name: cols[0],
+title: cols[1],
+department: cols[2],
+email: cols[3],
+phone: cols[4],
+location: cols[5],
+image: cols[6],
+admin: cols[7]
+};
+
+});
+
+buildFilters();
+renderStaff(staffData);
+
+});
+
+function renderStaff(list){
+
+grid.innerHTML="";
+
+list.forEach(person=>{
+
+const card=document.createElement("div");
+
+card.className="staff-card";
+
+card.innerHTML=`
+<img src="${person.image}">
+<h3>${person.name}</h3>
+<p>${person.title}</p>
+<a class="email-icon" href="mailto:${person.email}">
+✉
+</a>
+`;
+
+card.onclick=()=>openModal(person);
+
+grid.appendChild(card);
+
+});
+
+}
+
+function buildFilters(){
+
+const departments=[...new Set(staffData.map(p=>p.department))];
+
+filters.innerHTML=`<button data-dept="all" class="active">All</button>`;
+
+departments.forEach(dept=>{
+
+filters.innerHTML+=`<button data-dept="${dept}">${dept}</button>`;
+
+});
+
+}
+
+filters.addEventListener("click",e=>{
+
+if(!e.target.matches("button")) return;
+
+document.querySelectorAll(".filters button")
+.forEach(btn=>btn.classList.remove("active"));
+
+e.target.classList.add("active");
+
+const dept=e.target.dataset.dept;
+
+if(dept==="all"){
+renderStaff(staffData);
+return;
+}
+
+const filtered=staffData.filter(p=>p.department===dept);
+
+renderStaff(filtered);
+
+});
+
+search.addEventListener("input",function(){
+
+const term=this.value.toLowerCase();
+
+const filtered=staffData.filter(p=>
+p.name.toLowerCase().includes(term) ||
+p.title.toLowerCase().includes(term) ||
+p.department.toLowerCase().includes(term)
+);
+
+renderStaff(filtered);
+
+});
+
+function openModal(person){
+
+document.getElementById("modalImage").src=person.image;
+document.getElementById("modalName").textContent=person.name;
+document.getElementById("modalTitle").textContent=person.title;
+
+modalEmail.textContent = person.email;
+modalEmail.href = "mailto:" + person.email;
+modalPhone.textContent = person.phone;
+modalLocation.textContent = person.location;
+modalDepartment.textContent = person.department;
+
+const adminRow = document.getElementById("adminRow");
+const modalAdmin = document.getElementById("modalAdmin");
+
+if(person.admin && person.admin.trim() !== ""){
+adminRow.style.display = "block";
+modalAdmin.textContent = person.admin;
+}else{
+adminRow.style.display = "none";
+}
+
+document.getElementById("staffModal").classList.add("open");
+
+}
+
+document.getElementById("closeModal").onclick=function(){
+document.getElementById("staffModal").classList.remove("open");
+};
+
+</script>
+
+</body>
+</html>
