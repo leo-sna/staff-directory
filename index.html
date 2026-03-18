@@ -149,8 +149,8 @@ color:white;
 padding:14px 30px 14px 175px;
 position:relative;
 display:flex;
-align-items:center;
-min-height:56px;
+align-items:flex-start;
+min-height:78px;
 }
 
 .modal-header-text{
@@ -171,6 +171,17 @@ margin:4px 0 0 0;
 font-size:14px;
 width:100%;
 text-align:center;
+}
+
+.modal-supervisor{
+margin-top:8px;
+font-size:13px;
+line-height:1.2;
+color:white;
+background:rgba(0,0,0,.12);
+padding:2px 8px;
+border-radius:4px;
+display:inline-block;
 }
 
 .modal-body{
@@ -273,23 +284,6 @@ word-break:break-word;
 color:#1f5590;
 }
 
-.modal-grid label{
-display:flex;
-align-items:center;
-gap:6px;
-font-size:13px;
-color:#777;
-margin-bottom:4px;
-white-space:nowrap;
-}
-
-.modal-grid p{
-margin:0;
-font-size:15px;
-text-align:left;
-white-space:nowrap;
-}
-
 </style>
 </head>
 
@@ -316,45 +310,47 @@ white-space:nowrap;
       <div class="modal-header-text">
         <h2 id="modalName"></h2>
         <p id="modalTitle"></p>
+        <div id="modalSupervisor" class="modal-supervisor" style="display:none;"></div>
       </div>
     </div>
 
-<div class="modal-body">
-  <div class="modal-body-inner">
+    <div class="modal-body">
+      <div class="modal-body-inner">
 
-    <div class="modal-body-header">
-      <h3>Contact Information</h3>
+        <div class="modal-body-header">
+          <h3>Contact Information</h3>
 
-      <div id="adminRow">
-        <label>☎ Admin</label>
-        <p id="modalAdmin"></p>
+          <div id="adminRow">
+            <label>☎ Admin</label>
+            <p id="modalAdmin"></p>
+          </div>
+        </div>
+
+        <div class="modal-grid">
+          <div>
+            <label>✉︎ Email</label>
+            <a id="modalEmail" class="modal-email"></a>
+          </div>
+
+          <div>
+            <label>🕻 Phone</label>
+            <p id="modalPhone"></p>
+          </div>
+
+          <div>
+            <label>⚲ Location</label>
+            <p id="modalLocation"></p>
+          </div>
+
+          <div>
+            <label>🛈 Department</label>
+            <p id="modalDepartment"></p>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <div class="modal-grid">
-      <div>
-        <label>✉︎ Email</label>
-        <a id="modalEmail" class="modal-email"></a>
-      </div>
-
-      <div>
-        <label>🕻 Phone</label>
-        <p id="modalPhone"></p>
-      </div>
-
-      <div>
-        <label>⚲ Location</label>
-        <p id="modalLocation"></p>
-      </div>
-
-      <div>
-        <label>🛈 Department</label>
-        <p id="modalDepartment"></p>
-      </div>
-    </div>
-
-  </div>
-</div>
   </div>
 </div>
 
@@ -379,14 +375,15 @@ staffData = rows.map(row => {
 const cols = row.split(",");
 
 return {
-name: cols[0],
-title: cols[1],
-department: cols[2],
-email: cols[3],
-phone: cols[4],
-location: cols[5],
-image: cols[6],
-admin: cols[7]
+name: cols[0] ? cols[0].trim() : "",
+title: cols[1] ? cols[1].trim() : "",
+department: cols[2] ? cols[2].trim() : "",
+email: cols[3] ? cols[3].trim() : "",
+phone: cols[4] ? cols[4].trim() : "",
+location: cols[5] ? cols[5].trim() : "",
+image: cols[6] ? cols[6].trim() : "",
+admin: cols[7] ? cols[7].trim() : "",
+supervisor: cols[8] ? cols[8].trim() : ""
 };
 
 });
@@ -425,7 +422,7 @@ grid.appendChild(card);
 
 function buildFilters(){
 
-const departments=[...new Set(staffData.map(p=>p.department))];
+const departments=[...new Set(staffData.map(p=>p.department).filter(Boolean))];
 
 filters.innerHTML=`<button data-dept="all" class="active">All</button>`;
 
@@ -475,9 +472,18 @@ renderStaff(filtered);
 
 function openModal(person){
 
-document.getElementById("modalImage").src=person.image;
-document.getElementById("modalName").textContent=person.name;
-document.getElementById("modalTitle").textContent=person.title;
+document.getElementById("modalImage").src = person.image;
+document.getElementById("modalName").textContent = person.name;
+document.getElementById("modalTitle").textContent = person.title;
+
+const modalSupervisor = document.getElementById("modalSupervisor");
+if(person.supervisor && person.supervisor.trim() !== ""){
+modalSupervisor.textContent = "Supervisor: " + person.supervisor;
+modalSupervisor.style.display = "inline-block";
+}else{
+modalSupervisor.style.display = "none";
+modalSupervisor.textContent = "";
+}
 
 modalEmail.textContent = person.email;
 modalEmail.href = "mailto:" + person.email;
@@ -493,14 +499,21 @@ adminRow.style.display = "block";
 modalAdmin.textContent = person.admin;
 }else{
 adminRow.style.display = "none";
+modalAdmin.textContent = "";
 }
 
 document.getElementById("staffModal").classList.add("open");
 
 }
 
-document.getElementById("closeModal").onclick=function(){
+document.getElementById("closeModal").onclick = function(){
 document.getElementById("staffModal").classList.remove("open");
+};
+
+window.onclick = function(e){
+if(e.target === document.getElementById("staffModal")){
+document.getElementById("staffModal").classList.remove("open");
+}
 };
 
 </script>
