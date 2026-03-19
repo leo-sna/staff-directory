@@ -480,7 +480,7 @@ document.getElementById("modalTitle").textContent = person.title;
 
 const modalSupervisor = document.getElementById("modalSupervisor");
 if(person.supervisor && person.supervisor.trim() !== ""){
-modalSupervisor.textContent = "Supervisor: " + person.supervisor;
+modalSupervisor.textContent = "Direct Report: " + person.supervisor;
 modalSupervisor.style.display = "inline-block";
 }else{
 modalSupervisor.style.display = "none";
